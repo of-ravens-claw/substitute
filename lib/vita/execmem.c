@@ -54,7 +54,6 @@ const int g_exe_slab_item_size = PATCH_ITEM_SIZE > sizeof(tai_hook_t) ? PATCH_IT
  * @param      vma_p      The executable pointer address
  * @param      size_p     The size of the allocation. Always `SLAB_ITEM_SIZE`.
  * @param      opt        A `tai_substitute_args_t` structure
- * @param[in]  hint  Unused
  *
  * @return     `SUBSTITUTE_OK` or `SUBSTITUTE_ERR_VM` if out of memory
  */
@@ -131,9 +130,9 @@ int execmem_foreign_write_with_pc_patch(struct execmem_foreign_write *writes,
         }
         LOG("PID:%x, dst:%p, src:%p, len:%x", pid, writes[i].dst, writes[i].src, writes[i].len);
         if (pid == KERNEL_PID) {
-            ksceKernelCpuUnrestrictedMemcpy(writes[i].dst, writes[i].src, writes[i].len);
+            ksceKernelDomainTextMemcpy(writes[i].dst, writes[i].src, writes[i].len);
         } else {
-            ksceKernelRxMemcpyKernelToUserForPid(pid, (uintptr_t)writes[i].dst, writes[i].src, writes[i].len);
+            ksceKernelCopyToUserProcTextDomain(pid, writes[i].dst, writes[i].src, writes[i].len);
         }
         cache_flush(pid, (uintptr_t)writes[i].dst, writes[i].len);
     }
